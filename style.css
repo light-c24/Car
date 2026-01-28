@@ -13,7 +13,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    display: none; /* 默认隐藏 */
+    display: none;
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -79,7 +79,6 @@ body {
     transform: translateX(5px);
 }
 
-/* 组装工作区 */
 .assembly-workspace {
     flex: 1;
     display: flex;
@@ -127,7 +126,6 @@ body {
     cursor: not-allowed;
     transform: none;
 }
-
 .btn.secondary {
     background: #ffa502;
     color: white;
@@ -164,77 +162,155 @@ body {
     width: 320px;
     height: 200px;
     transition: transform 0.5s;
-    /* border: 1px dashed red; 调试用 */
+    margin-top: 0;
 }
 
 /* === 状态 A: 组装模式 (Exploded View) === */
+.exploded-view {
+    position: relative;
+    top: 50px;
+}
+
 .exploded-view .drop-zone {
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-/* 定义组装时的分散位置 */
 .exploded-view .part-body {
-    top: 10px;
-    left: 30px;
+    top: -150px;
+    left: 10px;
+    transform: scale(1);
 }
 .exploded-view .internal-mechanics-layer {
-    top: 60px;
-    left: 60px;
+    top: -20px;
+    left: 70px;
+    z-index: 100;
 }
 .exploded-view .part-chassis {
-    bottom: 50px;
+    bottom: 20px;
     left: 20px;
 }
 .exploded-view .rear-tire {
-    bottom: -10px;
+    bottom: -30px;
     left: 50px;
 }
 .exploded-view .front-tire {
-    bottom: -10px;
+    bottom: -30px;
     right: 60px;
 }
 
 /* === 状态 B: 测试模式 (Assembled View) === */
+.assembled-view {
+    /* [重要修复] 移除 left 的 !important，允许 JS 改变 left 值来移动小车 */
+    position: absolute !important;
+    bottom: -20px !important;
+    left: 0; /* 默认 0，但不加 !important */
+    top: auto !important;
+    margin-top: 0 !important;
+}
+
 .assembled-view .drop-zone {
     transition: all 0.5s ease-in-out;
-    border: none !important; /* 隐藏虚线框 */
-    background: transparent !important; /* 隐藏背景 */
+    border: none !important;
+    background: transparent !important;
 }
 .assembled-view .label-hint {
     display: none;
 }
 
-/* 定义测试时的紧凑位置 (拼成一辆车) */
-/* 以底盘为基准，所有部件对其 */
+/* 1. 底盘位置 */
 .assembled-view .part-chassis {
-    bottom: 40px;
+    bottom: 35px;
     left: 30px;
     z-index: 10;
 }
-.assembled-view .part-body {
-    top: auto;
-    bottom: 55px;
-    left: 30px; /* 坐在底盘上 */
-    z-index: 20;
-}
+
+/* 2. [重要修复] 内部零件位置 - 彻底放入车内 */
 .assembled-view .internal-mechanics-layer {
     top: auto;
-    bottom: 60px;
-    left: 65px; /* 藏在车身里 */
-    z-index: 15;
-    transform: scale(0.9); /* 稍微缩小一点适配内部 */
+    bottom: 45px; /* 提高一点，坐在底盘上 (底盘高35左右) */
+    left: 85px; /* 居中 */
+    z-index: 15; /* 必须小于车身(30) */
+    transform: scale(0.65); /* 缩小到合适尺寸 */
+    pointer-events: none; /* 防止遮挡鼠标事件 */
 }
+
+/* 3. 车身位置 */
+.assembled-view .part-body {
+    top: auto;
+    bottom: 42px;
+    left: 25px;
+    z-index: 30; /* 盖住内部 */
+    transition: opacity 0.5s ease;
+}
+
+/* 4. 轮胎位置 */
 .assembled-view .rear-tire {
-    bottom: 20px;
+    bottom: 15px;
     left: 65px;
     z-index: 25;
 }
 .assembled-view .front-tire {
-    bottom: 20px;
+    bottom: 15px;
     left: 225px;
     z-index: 25;
 }
 
-/* === 界面 2: 测试赛道样式 === */
+/* === 故障透视模式 === */
+.car-wrapper.reveal-failure .part-body {
+    opacity: 0.2;
+    filter: grayscale(1);
+}
+.car-wrapper.reveal-failure .internal-mechanics-layer {
+    z-index: 50 !important; /* 故障时浮上来 */
+    transform: scale(0.8);
+    filter: drop-shadow(0 0 5px #e74c3c);
+}
+
+/* === 破碎动画碎片 === */
+.body-shard-left {
+    position: absolute;
+    bottom: 42px;
+    left: 25px;
+    z-index: 40;
+    width: 300px;
+    height: 120px;
+    clip-path: polygon(0% 0%, 55% 0%, 35% 100%, 0% 100%);
+    transform-origin: bottom left;
+    animation: fallLeft 0.8s forwards ease-in;
+}
+.body-shard-right {
+    position: absolute;
+    bottom: 42px;
+    left: 25px;
+    z-index: 40;
+    width: 300px;
+    height: 120px;
+    clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 35% 100%);
+    transform-origin: bottom right;
+    animation: fallRight 0.8s forwards ease-in;
+}
+
+@keyframes fallLeft {
+    0% {
+        transform: rotate(0);
+        opacity: 0.9;
+    }
+    100% {
+        transform: rotate(-45deg) translate(-20px, 20px);
+        opacity: 0;
+    }
+}
+@keyframes fallRight {
+    0% {
+        transform: rotate(0);
+        opacity: 0.9;
+    }
+    100% {
+        transform: rotate(45deg) translate(20px, 20px);
+        opacity: 0;
+    }
+}
+
+/* === 界面 2: 测试赛道 === */
 #test-screen {
     flex-direction: column;
     background: linear-gradient(
@@ -270,7 +346,7 @@ body {
     min-width: 300px;
 }
 #test-screen .btn {
-    display: none; /* 初始隐藏重置按钮 */
+    display: none;
 }
 
 .scene {
@@ -280,6 +356,7 @@ body {
     height: 100%;
     overflow: hidden;
 }
+
 /* 跑道 */
 .road {
     position: absolute;
@@ -295,9 +372,17 @@ body {
     width: 100%;
     height: 0;
     border-top: 15px dashed #ffa502;
+    transform: translateY(-50%);
+}
+#test-track-marker {
+    position: absolute;
+    bottom: 110px;
+    left: 0;
+    width: 0;
+    height: 0;
 }
 
-/* 装饰元素 */
+/* 装饰 (保持原样) */
 .cloud {
     position: absolute;
     background: #fff;
@@ -347,7 +432,6 @@ body {
     top: -10px;
     left: 45px;
 }
-
 @keyframes float {
     from {
         transform: translateX(-100px);
@@ -408,7 +492,7 @@ body {
     left: 85%;
 }
 
-/* === 零件 Drop Zone 通用样式 === */
+/* Drop Zone & SVG */
 .drop-zone {
     position: absolute;
     width: auto;
@@ -426,7 +510,7 @@ body {
 .drop-zone.installed {
     border: none;
     background: transparent;
-    cursor: grab; /* 允许拖走 */
+    cursor: grab;
 }
 .drop-zone.installed:active {
     cursor: grabbing;
@@ -443,11 +527,10 @@ body {
     pointer-events: none;
 }
 
-/* SVG 尺寸定义 (重要) */
 .part-body {
-    width: 260px;
-    height: 100px;
-    z-index: 5;
+    width: 300px;
+    height: 120px;
+    z-index: 20;
 }
 .part-chassis {
     width: 280px;
@@ -460,9 +543,9 @@ body {
     z-index: 6;
 }
 .internal-mechanics-layer {
-    width: 180px;
-    height: 70px;
-    z-index: 4;
+    width: 160px;
+    height: 60px;
+    z-index: 15;
     display: flex;
 }
 .part-motor {
@@ -477,7 +560,7 @@ body {
     left: 10px;
 }
 
-/* SVG 内部样式 */
+/* SVG Styles */
 .model-svg .svg-fill-area {
     fill: transparent;
     stroke: #bdc3c7;
@@ -491,8 +574,6 @@ body {
     opacity: 0;
     transition: opacity 0.3s;
 }
-
-/* 材质颜色 (复用) */
 .drop-zone.installed .model-svg .svg-fill-area {
     stroke: none;
     stroke-dasharray: none;
@@ -534,7 +615,7 @@ body {
     opacity: 0.9;
 }
 
-/* 特效元素 */
+/* Effects */
 .effect-smoke,
 .effect-crash,
 .effect-spark,
@@ -546,7 +627,7 @@ body {
     z-index: 100;
 }
 
-/* 动画类 */
+/* Animations */
 .drive-anim {
     animation: suspension 0.6s infinite ease-in-out alternate;
 }
@@ -558,8 +639,6 @@ body {
         transform: translateY(2px) rotate(0.5deg);
     }
 }
-
-/* 轮胎转动 */
 .drive-anim .svg-rim {
     animation: spin 0.2s linear infinite;
     transform-origin: 35px 35px;
@@ -583,7 +662,6 @@ body {
     }
 }
 
-/* 故障动画 */
 .burnout-anim .part-motor .svg-fill-area {
     fill: #2d3436 !important;
     transition: fill 0.5s;
@@ -599,27 +677,6 @@ body {
         opacity: 1;
     }
     100% {
-        opacity: 0;
-    }
-}
-
-.shatter-anim .model-svg {
-    opacity: 0;
-    transition: opacity 0.1s;
-}
-.shatter-anim .effect-shards {
-    opacity: 1;
-    animation: explode 0.5s forwards;
-    top: 0;
-    left: 50%;
-}
-@keyframes explode {
-    0% {
-        transform: scale(0.5);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(2);
         opacity: 0;
     }
 }
