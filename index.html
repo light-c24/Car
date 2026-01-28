@@ -2,7 +2,7 @@
 <html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
-        <title>赛车组装大师 - 终极版</title>
+        <title>赛车组装大师 - 仿真版</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -36,7 +36,6 @@
                         style="stop-color: #7f8fa6; stop-opacity: 1"
                     />
                 </linearGradient>
-
                 <radialGradient id="grad-rubber" cx="30%" cy="30%" r="70%">
                     <stop
                         offset="0%"
@@ -47,7 +46,6 @@
                         style="stop-color: #1e272e; stop-opacity: 1"
                     />
                 </radialGradient>
-
                 <linearGradient
                     id="grad-plastic"
                     x1="0%"
@@ -68,7 +66,6 @@
                         style="stop-color: #005c8a; stop-opacity: 1"
                     />
                 </linearGradient>
-
                 <linearGradient
                     id="grad-copper-real"
                     x1="0%"
@@ -94,7 +91,6 @@
                         style="stop-color: #d35400; stop-opacity: 1"
                     />
                 </linearGradient>
-
                 <linearGradient
                     id="grad-glass-real"
                     x1="0%"
@@ -131,32 +127,14 @@
                         "
                     />
                 </linearGradient>
-
-                <filter
-                    id="dropShadow"
-                    x="-20%"
-                    y="-20%"
-                    width="140%"
-                    height="140%"
-                >
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
-                    <feOffset dx="2" dy="2" result="offsetblur" />
-                    <feComponentTransfer>
-                        <feFuncA type="linear" slope="0.5" />
-                    </feComponentTransfer>
-                    <feMerge>
-                        <feMergeNode />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
             </defs>
         </svg>
 
-        <div class="main-wrapper">
-            <div class="sidebar">
+        <div id="assembly-screen" class="screen active">
+            <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <h2>🏭 零件仓库</h2>
-                    <p>拖拽零件到右侧进行组装</p>
+                    <p>拖拽组装 / 拖回卸载</p>
                 </div>
 
                 <div class="parts-scroll-area">
@@ -168,7 +146,7 @@
                             data-part="tire"
                             data-mat="rubber"
                         >
-                            ⚫ 橡胶轮胎 (最佳)
+                            ⚫ 橡胶轮胎
                         </div>
                         <div
                             class="draggable-item"
@@ -187,7 +165,6 @@
                             🔵 玻璃轮胎
                         </div>
                     </div>
-
                     <div class="parts-category">
                         <h3>2. 底盘 (需坚硬)</h3>
                         <div
@@ -196,7 +173,7 @@
                             data-part="chassis"
                             data-mat="metal"
                         >
-                            ⛓️ 金属底盘 (最佳)
+                            ⛓️ 金属底盘
                         </div>
                         <div
                             class="draggable-item"
@@ -215,7 +192,6 @@
                             🟨 泡沫底盘
                         </div>
                     </div>
-
                     <div class="parts-category">
                         <h3>3. 车身 (需轻便)</h3>
                         <div
@@ -224,7 +200,7 @@
                             data-part="body"
                             data-mat="plastic"
                         >
-                            🏎️ 强化塑料 (最佳)
+                            🏎️ 强化塑料
                         </div>
                         <div
                             class="draggable-item"
@@ -243,7 +219,6 @@
                             🧊 玻璃外壳
                         </div>
                     </div>
-
                     <div class="parts-category">
                         <h3>4. 马达 (需导电)</h3>
                         <div
@@ -252,7 +227,7 @@
                             data-part="motor"
                             data-mat="copper"
                         >
-                            ⚡ 铜线马达 (最佳)
+                            ⚡ 铜线马达
                         </div>
                         <div
                             class="draggable-item"
@@ -262,16 +237,7 @@
                         >
                             🚫 塑料模型
                         </div>
-                        <div
-                            class="draggable-item"
-                            draggable="true"
-                            data-part="motor"
-                            data-mat="rubber"
-                        >
-                            🚫 橡胶模型
-                        </div>
                     </div>
-
                     <div class="parts-category">
                         <h3>5. 齿轮 (需坚韧)</h3>
                         <div
@@ -280,15 +246,7 @@
                             data-part="gear"
                             data-mat="metal"
                         >
-                            ⚙️ 钢制齿轮 (最佳)
-                        </div>
-                        <div
-                            class="draggable-item"
-                            draggable="true"
-                            data-part="gear"
-                            data-mat="plastic"
-                        >
-                            ⚙️ 塑料齿轮
+                            ⚙️ 钢制齿轮
                         </div>
                         <div
                             class="draggable-item"
@@ -302,274 +260,223 @@
                 </div>
             </div>
 
-            <div class="workspace">
+            <div class="assembly-workspace">
                 <div class="header-panel">
-                    <h1>🏁 赛车组装测试场</h1>
-                    <div class="btn-group">
-                        <button id="runBtn" class="btn primary" disabled>
-                            🚀 启动测试
-                        </button>
-                        <button id="resetBtn" class="btn secondary">
-                            🔧 拆卸重装
-                        </button>
+                    <h1>🔧 赛车工程部</h1>
+                    <div class="status-panel">
+                        <span id="assembly-status">等待组装...</span>
                     </div>
+                    <button id="startTestBtn" class="btn primary" disabled>
+                        🚀 前往测试场
+                    </button>
                 </div>
 
-                <div id="message" class="message-box">
-                    👋 欢迎！请将左侧零件拖入小车，打造你的专属赛车！
-                </div>
+                <div class="workbench-area" id="workbench">
+                    <div class="grid-bg"></div>
 
-                <div class="scene">
-                    <div class="sky">
-                        <div class="cloud c1">☁️</div>
-                        <div class="cloud c2">☁️</div>
-                    </div>
-                    <div class="mountains"></div>
-                    <div class="road">
-                        <div class="line"></div>
+                    <div id="car-container" class="car-wrapper exploded-view">
+                        <div class="effect-smoke">💨</div>
+                        <div class="effect-crash">💥</div>
+                        <div class="effect-spark">⚡</div>
+                        <div class="effect-shards">🧊</div>
 
-                        <div id="car" class="car">
-                            <div class="effect-smoke">💨</div>
-                            <div class="effect-crash">💥</div>
-                            <div class="effect-spark">⚡</div>
-                            <div class="effect-shards">🧊</div>
-                            <div class="drop-zone part-body" data-target="body">
-                                <span class="label-hint">拖入车身</span>
-                                <svg viewBox="0 0 240 100" class="model-svg">
-                                    <path
+                        <div class="drop-zone part-body" data-target="body">
+                            <span class="label-hint">车身</span>
+                            <svg viewBox="0 0 240 100" class="model-svg">
+                                <path
+                                    class="svg-fill-area"
+                                    d="M10,55 L30,25 C45,5 95,5 110,25 L140,25 C170,25 200,35 230,55 L235,85 L5,85 Z"
+                                />
+                                <path
+                                    class="svg-window"
+                                    d="M40,30 L100,30 L100,50 L35,50 Z"
+                                    fill="url(#grad-glass-real)"
+                                />
+                                <path
+                                    class="svg-detail"
+                                    d="M25,85 A25,25 0 0,1 75,85 M165,85 A25,25 0 0,1 215,85"
+                                    fill="none"
+                                    stroke="rgba(0,0,0,0.3)"
+                                    stroke-width="4"
+                                />
+                            </svg>
+                        </div>
+
+                        <div class="internal-mechanics-layer">
+                            <div
+                                class="drop-zone part-motor"
+                                data-target="motor"
+                            >
+                                <span class="label-hint">马达</span>
+                                <svg viewBox="0 0 80 60" class="model-svg">
+                                    <rect
+                                        x="10"
+                                        y="10"
+                                        width="60"
+                                        height="40"
+                                        rx="4"
                                         class="svg-fill-area"
-                                        d="M10,55 L30,25 C45,5 95,5 110,25 L140,25 C170,25 200,35 230,55 L235,85 L5,85 Z"
-                                    />
-                                    <path
-                                        class="svg-window"
-                                        d="M40,30 L100,30 L100,50 L35,50 Z"
-                                        fill="url(#grad-glass-real)"
                                     />
                                     <path
                                         class="svg-detail"
-                                        d="M25,85 A25,25 0 0,1 75,85 M165,85 A25,25 0 0,1 215,85"
-                                        fill="none"
-                                        stroke="rgba(0,0,0,0.3)"
-                                        stroke-width="4"
+                                        d="M20,10 V50 M26,10 V50 M32,10 V50 M38,10 V50 M44,10 V50 M50,10 V50"
+                                        stroke="rgba(0,0,0,0.2)"
+                                        stroke-width="3"
                                     />
                                 </svg>
                             </div>
-
-                            <div class="internal-mechanics-layer">
-                                <div
-                                    class="drop-zone part-motor"
-                                    data-target="motor"
-                                >
-                                    <span class="label-hint">拖入马达</span>
-                                    <svg viewBox="0 0 80 60" class="model-svg">
-                                        <rect
-                                            x="10"
-                                            y="10"
-                                            width="60"
-                                            height="40"
-                                            rx="4"
+                            <div
+                                class="drop-zone part-gears"
+                                data-target="gear"
+                            >
+                                <span class="label-hint">齿轮</span>
+                                <svg viewBox="0 0 100 70" class="model-svg">
+                                    <g class="gear-rotate-1">
+                                        <circle
+                                            cx="30"
+                                            cy="35"
+                                            r="25"
                                             class="svg-fill-area"
                                         />
                                         <path
                                             class="svg-detail"
-                                            d="M20,10 V50 M26,10 V50 M32,10 V50 M38,10 V50 M44,10 V50 M50,10 V50"
-                                            stroke="rgba(0,0,0,0.2)"
+                                            d="M30,5 L30,65 M5,35 L55,35 M12,17 L48,53 M12,53 L48,17"
+                                            stroke="rgba(0,0,0,0.3)"
                                             stroke-width="3"
                                         />
+                                    </g>
+                                    <g class="gear-rotate-2">
                                         <circle
                                             cx="70"
-                                            cy="30"
-                                            r="6"
-                                            fill="#666"
-                                            class="svg-detail"
+                                            cy="35"
+                                            r="18"
+                                            class="svg-fill-area"
                                         />
-                                    </svg>
-                                </div>
-                                <div
-                                    class="drop-zone part-gears"
-                                    data-target="gear"
-                                >
-                                    <span class="label-hint">拖入齿轮</span>
-                                    <svg viewBox="0 0 100 70" class="model-svg">
-                                        <g class="gear-rotate-1">
-                                            <circle
-                                                cx="30"
-                                                cy="35"
-                                                r="25"
-                                                class="svg-fill-area"
-                                            />
-                                            <path
-                                                class="svg-detail"
-                                                d="M30,5 L30,65 M5,35 L55,35 M12,17 L48,53 M12,53 L48,17"
-                                                stroke="rgba(0,0,0,0.3)"
-                                                stroke-width="3"
-                                            />
-                                            <circle
-                                                cx="30"
-                                                cy="35"
-                                                r="8"
-                                                fill="#555"
-                                            />
-                                        </g>
-                                        <g class="gear-rotate-2">
-                                            <circle
-                                                cx="70"
-                                                cy="35"
-                                                r="18"
-                                                class="svg-fill-area"
-                                            />
-                                            <path
-                                                class="svg-detail"
-                                                d="M70,17 L70,53 M52,35 L88,35"
-                                                stroke="rgba(0,0,0,0.3)"
-                                                stroke-width="3"
-                                            />
-                                            <circle
-                                                cx="70"
-                                                cy="35"
-                                                r="6"
-                                                fill="#555"
-                                            />
-                                        </g>
-                                    </svg>
-                                </div>
+                                        <path
+                                            class="svg-detail"
+                                            d="M70,17 L70,53 M52,35 L88,35"
+                                            stroke="rgba(0,0,0,0.3)"
+                                            stroke-width="3"
+                                        />
+                                    </g>
+                                </svg>
                             </div>
+                        </div>
 
-                            <div
-                                class="drop-zone part-chassis"
-                                data-target="chassis"
-                            >
-                                <span class="label-hint">拖入底盘</span>
-                                <svg viewBox="0 0 260 25" class="model-svg">
-                                    <rect
-                                        x="0"
-                                        y="0"
-                                        width="260"
-                                        height="25"
-                                        rx="6"
-                                        class="svg-fill-area"
-                                    />
-                                    <rect
-                                        x="20"
-                                        y="5"
-                                        width="220"
-                                        height="15"
-                                        rx="3"
-                                        fill="rgba(0,0,0,0.15)"
-                                        class="svg-detail"
-                                    />
-                                    <circle
-                                        cx="50"
-                                        cy="12.5"
-                                        r="4"
-                                        fill="#333"
-                                        class="svg-detail"
-                                        opacity="0.3"
-                                    />
-                                    <circle
-                                        cx="210"
-                                        cy="12.5"
-                                        r="4"
-                                        fill="#333"
-                                        class="svg-detail"
-                                        opacity="0.3"
-                                    />
-                                </svg>
-                            </div>
+                        <div
+                            class="drop-zone part-chassis"
+                            data-target="chassis"
+                        >
+                            <span class="label-hint">底盘</span>
+                            <svg viewBox="0 0 260 25" class="model-svg">
+                                <rect
+                                    x="0"
+                                    y="0"
+                                    width="260"
+                                    height="25"
+                                    rx="6"
+                                    class="svg-fill-area"
+                                />
+                                <rect
+                                    x="20"
+                                    y="5"
+                                    width="220"
+                                    height="15"
+                                    rx="3"
+                                    fill="rgba(0,0,0,0.15)"
+                                    class="svg-detail"
+                                />
+                            </svg>
+                        </div>
 
-                            <div
-                                class="drop-zone part-tire rear-tire"
-                                data-target="tire"
-                            >
-                                <svg viewBox="0 0 70 70" class="model-svg">
-                                    <circle
-                                        cx="35"
-                                        cy="35"
-                                        r="32"
-                                        class="svg-fill-area"
-                                        stroke-width="0"
-                                    />
-                                    <circle
-                                        cx="35"
-                                        cy="35"
-                                        r="18"
-                                        class="svg-rim"
-                                        fill="url(#grad-metal-shine)"
-                                        stroke="#555"
-                                        stroke-width="1"
-                                    />
-                                    <circle
-                                        cx="35"
-                                        cy="28"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                    <circle
-                                        cx="28"
-                                        cy="38"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                    <circle
-                                        cx="42"
-                                        cy="38"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                </svg>
-                            </div>
-                            <div
-                                class="drop-zone part-tire front-tire"
-                                data-target="tire"
-                            >
-                                <svg viewBox="0 0 70 70" class="model-svg">
-                                    <circle
-                                        cx="35"
-                                        cy="35"
-                                        r="32"
-                                        class="svg-fill-area"
-                                        stroke-width="0"
-                                    />
-                                    <circle
-                                        cx="35"
-                                        cy="35"
-                                        r="18"
-                                        class="svg-rim"
-                                        fill="url(#grad-metal-shine)"
-                                        stroke="#555"
-                                        stroke-width="1"
-                                    />
-                                    <circle
-                                        cx="35"
-                                        cy="28"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                    <circle
-                                        cx="28"
-                                        cy="38"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                    <circle
-                                        cx="42"
-                                        cy="38"
-                                        r="2"
-                                        fill="#333"
-                                        class="svg-detail"
-                                    />
-                                </svg>
-                            </div>
+                        <div
+                            class="drop-zone part-tire rear-tire"
+                            data-target="tire"
+                        >
+                            <svg viewBox="0 0 70 70" class="model-svg">
+                                <circle
+                                    cx="35"
+                                    cy="35"
+                                    r="32"
+                                    class="svg-fill-area"
+                                    stroke-width="0"
+                                />
+                                <circle
+                                    cx="35"
+                                    cy="35"
+                                    r="18"
+                                    class="svg-rim"
+                                    fill="url(#grad-metal-shine)"
+                                    stroke="#555"
+                                    stroke-width="1"
+                                />
+                            </svg>
+                        </div>
+                        <div
+                            class="drop-zone part-tire front-tire"
+                            data-target="tire"
+                        >
+                            <svg viewBox="0 0 70 70" class="model-svg">
+                                <circle
+                                    cx="35"
+                                    cy="35"
+                                    r="32"
+                                    class="svg-fill-area"
+                                    stroke-width="0"
+                                />
+                                <circle
+                                    cx="35"
+                                    cy="35"
+                                    r="18"
+                                    class="svg-rim"
+                                    fill="url(#grad-metal-shine)"
+                                    stroke="#555"
+                                    stroke-width="1"
+                                />
+                            </svg>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div id="test-screen" class="screen">
+            <div class="test-ui-overlay">
+                <div id="test-message" class="test-message-box">
+                    准备出发...
+                </div>
+                <button id="resetBtn" class="btn secondary">
+                    🔧 拆卸 / 调整
+                </button>
+            </div>
+
+            <div class="scene">
+                <div class="sky">
+                    <div class="cloud c1">
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="cloud c2">
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+                <div class="scenery">
+                    <div class="mountain m1"></div>
+                    <div class="mountain m2"></div>
+                    <div class="trees">
+                        <div class="tree t1"></div>
+                        <div class="tree t2"></div>
+                        <div class="tree t3"></div>
+                    </div>
+                </div>
+                <div class="road">
+                    <div class="line"></div>
+                    <div id="test-track-marker"></div>
+                </div>
+            </div>
+        </div>
+
         <script src="script.js"></script>
     </body>
 </html>

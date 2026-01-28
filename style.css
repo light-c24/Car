@@ -1,200 +1,353 @@
 body {
     font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-    background: #2f3640;
     margin: 0;
     height: 100vh;
-    color: #333;
     overflow: hidden;
+    background: #2f3640;
 }
 
-.main-wrapper {
-    display: flex;
-    height: 100vh;
+/* === 屏幕管理 === */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    background: #f5f6fa;
-    max-width: 1600px;
-    margin: 0 auto;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    height: 100%;
+    display: none; /* 默认隐藏 */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.screen.active {
+    display: flex;
+    opacity: 1;
+    z-index: 10;
 }
 
-/* === 左侧：零件仓库 === */
+/* === 界面 1: 组装车间样式 === */
+#assembly-screen {
+    background: #f5f6fa;
+}
+
 .sidebar {
-    width: 280px;
+    width: 300px;
     background: #dcdde1;
     border-right: 2px solid #b2bec3;
     display: flex;
     flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 20;
 }
-
 .sidebar-header {
     padding: 20px;
     background: #fff;
-    border-bottom: 1px solid #dcdde1;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #ccc;
 }
-.sidebar-header h2 {
-    font-size: 20px;
-    margin: 0;
-    color: #2c3e50;
-}
-.sidebar-header p {
-    font-size: 13px;
-    color: #7f8c8d;
-    margin: 5px 0 0;
-}
-
 .parts-scroll-area {
     padding: 15px;
     overflow-y: auto;
     flex: 1;
 }
-
 .parts-category {
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #bdc3c7;
+    background: #fff;
     margin-bottom: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .parts-category h3 {
-    font-size: 14px;
-    color: #2f3640;
     margin: 0 0 10px 0;
-    font-weight: 700;
+    font-size: 14px;
+    color: #2c3e50;
     border-bottom: 2px solid #f1f2f6;
     padding-bottom: 5px;
 }
-
 .draggable-item {
+    padding: 10px;
+    margin-bottom: 8px;
     background: #f1f2f6;
     border: 1px solid #ced6e0;
-    padding: 10px 12px;
-    margin-bottom: 8px;
     border-radius: 6px;
     cursor: grab;
     font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
-    color: #2f3542;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
 }
 .draggable-item:hover {
     background: #3742fa;
     color: white;
-    border-color: #3742fa;
     transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(55, 66, 250, 0.3);
-}
-.draggable-item:active {
-    cursor: grabbing;
-    transform: scale(0.98);
 }
 
-/* === 右侧：工作区 === */
-.workspace {
+/* 组装工作区 */
+.assembly-workspace {
     flex: 1;
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    background: #fff;
+    position: relative;
 }
-
 .header-panel {
+    padding: 15px 30px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    z-index: 20;
 }
-.header-panel h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #2f3542;
-    text-shadow: 1px 1px 0 #ddd;
+.status-panel {
+    font-weight: bold;
+    color: #7f8c8d;
+    background: #f1f2f6;
+    padding: 8px 15px;
+    border-radius: 20px;
 }
 
 .btn {
-    padding: 12px 25px;
+    padding: 10px 25px;
     border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
+    border-radius: 6px;
+    font-size: 16px;
     font-weight: bold;
+    cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
-}
-.btn:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
-}
-.btn:disabled {
-    background: #a4b0be;
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-    transform: none;
 }
 .btn.primary {
     background: #2ed573;
     color: white;
+    box-shadow: 0 4px 0 #218c53;
 }
+.btn.primary:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #218c53;
+}
+.btn.primary:disabled {
+    background: #bdc3c7;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn.secondary {
     background: #ffa502;
     color: white;
+    box-shadow: 0 4px 0 #e67e22;
+}
+.btn.secondary:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #e67e22;
 }
 
-.message-box {
-    background: #f1f2f6;
-    color: #2f3542;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
+.workbench-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ecf0f1;
+}
+.grid-bg {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background-image:
+        linear-gradient(#ccc 1px, transparent 1px),
+        linear-gradient(90deg, #ccc 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+}
+
+/* === 小车容器 (通用) === */
+.car-wrapper {
+    position: relative;
+    width: 320px;
+    height: 200px;
+    transition: transform 0.5s;
+    /* border: 1px dashed red; 调试用 */
+}
+
+/* === 状态 A: 组装模式 (Exploded View) === */
+.exploded-view .drop-zone {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* 定义组装时的分散位置 */
+.exploded-view .part-body {
+    top: 10px;
+    left: 30px;
+}
+.exploded-view .internal-mechanics-layer {
+    top: 60px;
+    left: 60px;
+}
+.exploded-view .part-chassis {
+    bottom: 50px;
+    left: 20px;
+}
+.exploded-view .rear-tire {
+    bottom: -10px;
+    left: 50px;
+}
+.exploded-view .front-tire {
+    bottom: -10px;
+    right: 60px;
+}
+
+/* === 状态 B: 测试模式 (Assembled View) === */
+.assembled-view .drop-zone {
+    transition: all 0.5s ease-in-out;
+    border: none !important; /* 隐藏虚线框 */
+    background: transparent !important; /* 隐藏背景 */
+}
+.assembled-view .label-hint {
+    display: none;
+}
+
+/* 定义测试时的紧凑位置 (拼成一辆车) */
+/* 以底盘为基准，所有部件对其 */
+.assembled-view .part-chassis {
+    bottom: 40px;
+    left: 30px;
+    z-index: 10;
+}
+.assembled-view .part-body {
+    top: auto;
+    bottom: 55px;
+    left: 30px; /* 坐在底盘上 */
+    z-index: 20;
+}
+.assembled-view .internal-mechanics-layer {
+    top: auto;
+    bottom: 60px;
+    left: 65px; /* 藏在车身里 */
+    z-index: 15;
+    transform: scale(0.9); /* 稍微缩小一点适配内部 */
+}
+.assembled-view .rear-tire {
+    bottom: 20px;
+    left: 65px;
+    z-index: 25;
+}
+.assembled-view .front-tire {
+    bottom: 20px;
+    left: 225px;
+    z-index: 25;
+}
+
+/* === 界面 2: 测试赛道样式 === */
+#test-screen {
+    flex-direction: column;
+    background: linear-gradient(
+        to bottom,
+        #87ceeb 0%,
+        #e0f7fa 70%,
+        #dff9fb 100%
+    );
+}
+
+.test-ui-overlay {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 80%;
+}
+.test-message-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 15px;
-    border: 2px solid #dfe4ea;
-    font-size: 16px;
+    color: #2f3640;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 2px solid #fff;
+    text-align: center;
+    min-width: 300px;
+}
+#test-screen .btn {
+    display: none; /* 初始隐藏重置按钮 */
 }
 
-/* === 场景 === */
 .scene {
     flex: 1;
     position: relative;
-    background: linear-gradient(
-        to bottom,
-        #70a1ff 0%,
-        #dfe4ea 60%,
-        #95afc0 60%
-    );
-    border-radius: 15px;
-    border: 5px solid #2f3542;
-    overflow: hidden;
-    min-height: 400px;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.1);
-}
-.sky {
-    position: absolute;
-    top: 0;
     width: 100%;
-    height: 60%;
+    height: 100%;
+    overflow: hidden;
 }
+/* 跑道 */
+.road {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 200px;
+    background: #57606f;
+    border-top: 15px solid #3d4653;
+}
+.line {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: 0;
+    border-top: 15px dashed #ffa502;
+}
+
+/* 装饰元素 */
 .cloud {
     position: absolute;
-    font-size: 50px;
-    opacity: 0.8;
-    animation: float 20s linear infinite;
-    filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+    background: #fff;
+    border-radius: 50px;
+    opacity: 0.9;
+}
+.cloud div {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
 }
 .c1 {
-    top: 30px;
+    width: 120px;
+    height: 40px;
+    top: 50px;
     left: 10%;
+    animation: float 30s linear infinite;
+}
+.c1 div:nth-child(1) {
+    width: 50px;
+    height: 50px;
+    top: -25px;
+    left: 15px;
+}
+.c1 div:nth-child(2) {
+    width: 40px;
+    height: 40px;
+    top: -15px;
+    left: 55px;
 }
 .c2 {
-    top: 80px;
-    left: 65%;
-    animation-delay: -8s;
+    width: 100px;
+    height: 35px;
+    top: 120px;
+    left: 70%;
+    animation: float 40s linear infinite reverse;
 }
+.c2 div:nth-child(1) {
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    left: 10px;
+}
+.c2 div:nth-child(2) {
+    width: 35px;
+    height: 35px;
+    top: -10px;
+    left: 45px;
+}
+
 @keyframes float {
     from {
         transform: translateX(-100px);
@@ -204,97 +357,132 @@ body {
     }
 }
 
-.mountains {
+.scenery {
     position: absolute;
-    bottom: 150px;
+    bottom: 200px;
     width: 100%;
-    height: 120px;
-    background: linear-gradient(135deg, transparent 50%, #7bed9f 50%) 0 0 /
-        120px 120px;
-    opacity: 0.8;
+    height: 200px;
 }
-.road {
+.mountain {
     position: absolute;
     bottom: 0;
-    width: 100%;
-    height: 160px;
-    background: #57606f;
-    border-top: 10px solid #2f3542;
-}
-.line {
-    position: absolute;
-    top: 50%;
-    width: 100%;
+    width: 0;
     height: 0;
-    border-top: 12px dashed #ffa502;
+    border-style: solid;
 }
-
-/* === 小车模型与 SVG === */
-.car {
+.m1 {
+    left: 10%;
+    border-width: 0 150px 200px 150px;
+    border-color: transparent transparent #a8e6cf transparent;
+}
+.m2 {
+    left: 60%;
+    border-width: 0 100px 150px 100px;
+    border-color: transparent transparent #81ecec transparent;
+}
+.tree {
     position: absolute;
-    left: 100px;
-    bottom: 40px;
-    width: 320px;
-    height: 180px;
-    z-index: 10;
-    transition: left 2s ease-in-out;
-    /* 调试用 */
-    /* border: 1px solid red; */
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-width: 0 20px 60px 20px;
+    border-color: transparent transparent #2ecc71 transparent;
+}
+.tree::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 10px;
+    background: #795548;
+    bottom: -70px;
+    left: -3px;
+}
+.t1 {
+    left: 5%;
+}
+.t2 {
+    left: 25%;
+    transform: scale(1.2);
+}
+.t3 {
+    left: 85%;
 }
 
-/* 通用 Drop Zone (零件槽位) */
+/* === 零件 Drop Zone 通用样式 === */
 .drop-zone {
     position: absolute;
-    border: 3px dashed rgba(255, 255, 255, 0.6);
-    background: rgba(0, 0, 0, 0.1);
+    width: auto;
+    height: auto;
+    border: 3px dashed rgba(44, 62, 80, 0.3);
+    background: rgba(255, 255, 255, 0.4);
     border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
     box-sizing: border-box;
 }
-
-.drop-zone:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: #fff;
+.drop-zone.highlight {
+    border-color: #ffa502;
+    background: rgba(255, 165, 2, 0.2);
+    transform: scale(1.05);
 }
-
-/* 提示文字 */
+.drop-zone.installed {
+    border: none;
+    background: transparent;
+    cursor: grab; /* 允许拖走 */
+}
+.drop-zone.installed:active {
+    cursor: grabbing;
+}
 .label-hint {
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 14px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     top: 50%;
     transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: bold;
+    color: #7f8c8d;
     pointer-events: none;
-    z-index: 20;
 }
 
-/* 拖拽悬停高亮 - 更加明显 */
-.drop-zone.highlight {
-    border-color: #ffa502;
-    background: rgba(255, 165, 2, 0.4);
-    transform: scale(1.1);
-    z-index: 100 !important; /* 确保悬停时在最上层 */
+/* SVG 尺寸定义 (重要) */
+.part-body {
+    width: 260px;
+    height: 100px;
+    z-index: 5;
+}
+.part-chassis {
+    width: 280px;
+    height: 35px;
+    z-index: 1;
+}
+.part-tire {
+    width: 75px;
+    height: 75px;
+    z-index: 6;
+}
+.internal-mechanics-layer {
+    width: 180px;
+    height: 70px;
+    z-index: 4;
+    display: flex;
+}
+.part-motor {
+    width: 80px;
+    height: 60px;
+    position: relative;
+}
+.part-gears {
+    width: 90px;
+    height: 70px;
+    position: relative;
+    left: 10px;
 }
 
-/* === 零件 SVG 样式 === */
-.model-svg {
-    width: 100%;
-    height: 100%;
-    /* 默认给个投影，增加立体感 */
-    filter: drop-shadow(0px 4px 3px rgba(0, 0, 0, 0.2));
-}
-
-/* 未安装状态 (幽灵模式) */
+/* SVG 内部样式 */
 .model-svg .svg-fill-area {
     fill: transparent;
-    stroke: #dfe4ea;
+    stroke: #bdc3c7;
     stroke-width: 2;
-    stroke-dasharray: 6 3;
+    stroke-dasharray: 5 3;
     transition: all 0.3s;
 }
 .model-svg .svg-detail,
@@ -304,14 +492,7 @@ body {
     transition: opacity 0.3s;
 }
 
-/* 已安装状态 (Installed) */
-.drop-zone.installed {
-    border: none;
-    background: transparent;
-}
-.drop-zone.installed .label-hint {
-    display: none;
-}
+/* 材质颜色 (复用) */
 .drop-zone.installed .model-svg .svg-fill-area {
     stroke: none;
     stroke-dasharray: none;
@@ -322,139 +503,63 @@ body {
     opacity: 1;
 }
 
-/* === 真实材质颜色映射 (3D质感) === */
-
-/* 1. 橡胶 (Rubber) */
 .rubber .svg-fill-area {
     fill: url(#grad-rubber);
 }
-
-/* 2. 塑料 (Plastic) */
 .plastic .svg-fill-area {
     fill: url(#grad-plastic);
     filter: brightness(1.1);
 }
-/* 塑料底盘特别处理颜色 */
-.part-chassis.plastic .svg-fill-area {
-    fill: #3498db;
-}
-
-/* 3. 金属 (Metal) */
 .metal .svg-fill-area {
     fill: url(#grad-metal-shine);
     stroke: #57606f;
     stroke-width: 1px !important;
 }
-
-/* 4. 泡沫 (Foam) */
 .foam .svg-fill-area {
     fill: #f1c40f;
     stroke: #e67e22 !important;
     stroke-width: 2px !important;
     stroke-dasharray: 4 2 !important;
-    filter: sepia(0.3);
 }
-
-/* 5. 玻璃 (Glass) */
 .glass .svg-fill-area {
     fill: url(#grad-glass-real);
     stroke: #fff;
     stroke-width: 1.5px !important;
 }
-
-/* 6. 铜 (Copper) */
 .copper .svg-fill-area {
     fill: url(#grad-copper-real);
 }
-
-/* 7. 肥皂 (Soap) */
 .soap .svg-fill-area {
     fill: #fff0f0;
     opacity: 0.9;
 }
 
-/* === 部件布局与尺寸 (扩大热区) === */
-
-/* 车身 - 覆盖在上层 */
-.part-body {
-    top: 5px;
-    left: 20px;
-    width: 260px;
-    height: 110px;
-    z-index: 20;
-    pointer-events: none; /* 让鼠标穿透车身，方便拖到底盘和内部 */
-}
-/* 只有当拖拽车身时，才允许响应 */
-.part-body.drop-zone {
-    pointer-events: auto;
-}
-/* 安装后如果是半透明材质，允许穿透看内部 */
-.part-body.plastic .svg-fill-area {
-    fill-opacity: 0.7;
-}
-.part-body.glass .svg-fill-area {
-    fill-opacity: 0.5;
-}
-
-/* 内部机械层容器 */
-.internal-mechanics-layer {
+/* 特效元素 */
+.effect-smoke,
+.effect-crash,
+.effect-spark,
+.effect-shards {
     position: absolute;
-    top: 40px;
-    left: 45px;
-    width: 200px;
-    height: 80px;
-    z-index: 25; /* 提高层级，确保容易点到 */
-    display: flex;
-    pointer-events: none; /* 容器穿透 */
+    font-size: 40px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
 }
 
-/* 马达 - 加大 */
-.part-motor {
-    position: absolute;
-    left: 0;
-    width: 90px;
-    height: 70px; /* 加大尺寸 */
-    pointer-events: auto; /* 恢复点击 */
-}
-
-/* 齿轮 - 加大 */
-.part-gears {
-    position: absolute;
-    left: 95px;
-    width: 100px;
-    height: 75px; /* 加大尺寸 */
-    pointer-events: auto;
-}
-
-/* 底盘 - 最底层 */
-.part-chassis {
-    bottom: 30px;
-    left: 10px;
-    width: 280px;
-    height: 35px;
-    z-index: 5;
-}
-
-/* 轮胎 */
-.part-tire {
-    width: 75px;
-    height: 75px;
-    bottom: -20px;
-    z-index: 30;
-}
-.rear-tire {
-    left: 45px;
-}
-.front-tire {
-    right: 55px;
-}
-
-/* === 逼真动画效果 === */
-
-/* 1. 正常行驶 */
-.drive-anim .car {
+/* 动画类 */
+.drive-anim {
     animation: suspension 0.6s infinite ease-in-out alternate;
 }
+@keyframes suspension {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        transform: translateY(2px) rotate(0.5deg);
+    }
+}
+
+/* 轮胎转动 */
 .drive-anim .svg-rim {
     animation: spin 0.2s linear infinite;
     transform-origin: 35px 35px;
@@ -467,15 +572,6 @@ body {
     animation: spin-rev 0.4s linear infinite;
     transform-origin: 70px 35px;
 }
-
-@keyframes suspension {
-    0% {
-        transform: translateY(0) rotate(0deg);
-    }
-    100% {
-        transform: translateY(3px) rotate(0.5deg);
-    }
-}
 @keyframes spin {
     100% {
         transform: rotate(360deg);
@@ -487,63 +583,35 @@ body {
     }
 }
 
-/* 2. 打滑 (Slip) - 剧烈震动 + 轮胎飞转 */
-.slip-anim .car {
-    animation: vibrate 0.1s infinite;
+/* 故障动画 */
+.burnout-anim .part-motor .svg-fill-area {
+    fill: #2d3436 !important;
+    transition: fill 0.5s;
 }
-.slip-anim .svg-rim {
-    animation: spin 0.05s linear infinite;
-    transform-origin: 35px 35px;
-} /* 极速空转 */
-.slip-anim .effect-smoke {
+.burnout-anim .effect-spark {
     opacity: 1;
-    animation: smoke-rise 0.5s infinite;
+    animation: spark 0.2s infinite;
+    top: -20px;
+    left: 50%;
 }
-
-@keyframes vibrate {
+@keyframes spark {
     0% {
-        transform: translate(0, 0);
-    }
-    25% {
-        transform: translate(-2px, 2px);
-    }
-    50% {
-        transform: translate(0, -2px);
-    }
-    75% {
-        transform: translate(2px, 2px);
+        opacity: 1;
     }
     100% {
-        transform: translate(0, 0);
+        opacity: 0;
     }
 }
 
-/* 3. 压垮 (Collapse) - 底盘弯曲，车身下沉 */
-.collapse-anim .part-chassis {
-    transform-origin: center;
-    animation: bend 0.5s forwards;
-}
-.collapse-anim .part-body,
-.collapse-anim .internal-mechanics-layer {
-    transition: transform 0.5s;
-    transform: translateY(20px) rotate(-2deg); /* 下沉歪斜 */
-}
-@keyframes bend {
-    to {
-        transform: scaleY(0.5) translateY(10px);
-        filter: brightness(0.7);
-    }
-}
-
-/* 4. 破碎 (Shatter) - 玻璃零件消失，碎片飞出 */
-.shatter-anim .part-body .model-svg,
-.shatter-anim .part-tire .model-svg {
+.shatter-anim .model-svg {
     opacity: 0;
-    transition: opacity 0.1s; /* 瞬间消失 */
+    transition: opacity 0.1s;
 }
 .shatter-anim .effect-shards {
     opacity: 1;
     animation: explode 0.5s forwards;
+    top: 0;
+    left: 50%;
 }
 @keyframes explode {
     0% {
@@ -556,73 +624,17 @@ body {
     }
 }
 
-/* 5. 烧毁/故障 (Burnout) - 马达发黑 */
-.burnout-anim .part-motor .svg-fill-area {
-    fill: #2d3436 !important;
-    transition: fill 0.5s;
+.slip-anim {
+    animation: vibrate 0.1s infinite;
 }
-.burnout-anim .effect-spark {
-    opacity: 1;
-    animation: spark-flash 0.2s infinite;
-}
-.burnout-anim .effect-smoke {
-    opacity: 1;
-    left: 60px;
-    animation: smoke-rise 1s infinite;
-    background: radial-gradient(circle, #333, transparent);
-}
-
-@keyframes spark-flash {
+@keyframes vibrate {
     0% {
-        opacity: 1;
+        transform: translate(0, 0);
     }
     50% {
-        opacity: 0;
+        transform: translate(2px, -2px);
     }
     100% {
-        opacity: 1;
+        transform: translate(0, 0);
     }
-}
-@keyframes smoke-rise {
-    0% {
-        transform: translateY(0) scale(0.5);
-        opacity: 0.8;
-    }
-    100% {
-        transform: translateY(-60px) scale(2.5);
-        opacity: 0;
-    }
-}
-
-/* 特效元素定位 */
-.effect-smoke,
-.effect-crash,
-.effect-spark,
-.effect-shards {
-    position: absolute;
-    font-size: 40px;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 50;
-}
-.effect-smoke {
-    bottom: -10px;
-    left: 30px;
-    color: #dcdde1;
-}
-.effect-crash {
-    top: 0;
-    left: 100px;
-    font-size: 60px;
-}
-.effect-spark {
-    top: 50px;
-    left: 60px;
-    color: #f1c40f;
-}
-.effect-shards {
-    top: 20px;
-    left: 100px;
-    color: #a4b0be;
-    font-size: 50px;
 }
