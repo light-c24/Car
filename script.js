@@ -216,150 +216,178 @@ resetBtn.addEventListener("click", () => {
 
 function runSimulation() {
     const { tire, chassis, body, motor, gear } = currentAssembly;
-    let result = {
-        success: true,
-        msg: "完美运行！",
-        crashPart: null,
-        anim: "",
-    };
-    let speed = 2000;
+
+    let errorList = [];
+
+    // --- 1. 逐项检查 (逻辑不变) ---
 
     if (motor !== "copper") {
-        result = {
-            success: false,
-            msg: "马达烧毁！塑料不导电！",
-            crashPart: "motor",
+        errorList.push({
+            part: "motor",
+            msg: "马达烧毁 (塑料不导电)",
             anim: "burnout-anim",
-        };
-    } else if (gear === "soap") {
-        result = {
-            success: false,
-            msg: "齿轮打滑！肥皂太滑了！",
-            crashPart: "gear",
+            distance: 50,
+        });
+    }
+    if (gear === "soap") {
+        errorList.push({
+            part: "gear",
+            msg: "齿轮打滑 (肥皂太滑)",
             anim: "slip-anim",
-        };
-    } else if (chassis === "foam") {
-        result = {
-            success: false,
-            msg: "底盘断裂！泡沫太脆！",
-            crashPart: "chassis",
+            distance: 50,
+        });
+    }
+    if (chassis === "foam") {
+        errorList.push({
+            part: "chassis",
+            msg: "底盘断裂 (泡沫太脆)",
             anim: "shatter-anim",
-        };
-    } else if (tire === "glass") {
-        result = {
-            success: false,
-            msg: "轮胎震碎了！玻璃不适合做轮子！",
-            crashPart: "tire",
-            anim: "shatter-anim",
-        };
-    } else if (tire === "plastic") {
-        result = {
-            success: false,
-            msg: "轮胎打滑！塑料抓地力不足！",
-            crashPart: "tire",
-            anim: "slip-anim",
-        };
-    } else if (body === "glass") {
-        result = {
-            success: false,
-            msg: "车身震碎！玻璃太危险！",
-            crashPart: "body",
-            anim: "shatter-anim",
-        };
-    } else if (body === "metal") {
-        result = {
-            success: true,
-            msg: "通过测试！但金属车身太重，速度很慢。",
-            crashPart: null,
-            anim: "",
-        };
-        speed = 4000;
+            distance: 100,
+        });
     }
 
+    // 轮胎检查
+    if (tire === "glass") {
+        errorList.push({
+            part: "tire",
+            msg: "轮胎震碎 (玻璃易碎)",
+            anim: "shatter-anim",
+            distance: 100,
+        });
+    } else if (tire === "plastic") {
+        errorList.push({
+            part: "tire",
+            msg: "轮胎打滑 (抓地力不足)",
+            anim: "slip-anim",
+            distance: 100,
+        });
+    }
+
+    // 车身检查
+    if (body === "glass") {
+        errorList.push({
+            part: "body",
+            msg: "车身震碎 (强度不足)",
+            anim: "shatter-anim",
+            distance: 400,
+        });
+    }
+
+    // --- 2. 汇总结果 (修改了显示逻辑) ---
+
+    const success = errorList.length === 0;
+    let displayMsg = "";
+    let finalSpeed = 2000;
+    let finalDistance = 800;
+
+    if (success) {
+        if (body === "metal") {
+            displayMsg = "⚠️ 这一项通过了，但是...\n金属车身太重，速度很慢。";
+            finalSpeed = 4000;
+        } else {
+            displayMsg = "🏆 完美运行！\n设计非常合理。";
+            finalSpeed = 2000;
+        }
+        testMessage.style.textAlign = "center"; // 成功信息居中好看
+    } else {
+        // === 失败显示优化 ===
+        // 使用换行符 \n 和列表符号 •
+        const errorLines = errorList.map((e) => `• ${e.msg}`);
+        displayMsg = `❌ 测试失败，发现 ${errorList.length} 处故障：\n\n${errorLines.join("\n")}`;
+
+        testMessage.style.textAlign = "left"; // 列表左对齐好看
+
+        // 计算最短距离
+        finalDistance = Math.min(...errorList.map((e) => e.distance));
+        finalSpeed = 1000;
+    }
+
+    // --- 3. 执行动画 ---
+
     carContainer.classList.add("drive-anim");
-
-    let distance =
-        result.crashPart === "motor" || result.crashPart === "gear" ? 50 : 800;
-    if (result.crashPart === "tire" && result.anim === "slip-anim")
-        distance = 100;
-    if (result.crashPart === "body") distance = 400;
-
-    let duration = result.success
-        ? speed
-        : result.crashPart === "body"
-          ? 1000
-          : 1000;
-    carContainer.style.transition = `left ${duration}ms linear`;
+    carContainer.style.transition = `left ${finalSpeed}ms linear`;
 
     void carContainer.offsetWidth;
-    carContainer.style.left = distance + "px";
+    carContainer.style.left = finalDistance + "px";
 
     setTimeout(() => {
         carContainer.classList.remove("drive-anim");
 
-        if (!result.success) {
-            testMessage.textContent = "❌ 测试失败: " + result.msg;
+        // 设置文本颜色和内容
+        if (!success) {
             testMessage.style.color = "#c0392b";
-            applyCrashEffect(result.crashPart, result.anim);
+            // 触发所有特效
+            errorList.forEach((err) => {
+                applyCrashEffect(err.part, err.anim);
 
-            if (result.crashPart === "motor" || result.crashPart === "gear") {
-                carContainer.classList.add("reveal-failure");
-            }
+                // [修改开始] ---------------------------------------
+                if (err.part === "motor" || err.part === "gear") {
+                    // 1. 仍然给大容器加 reveal-failure，为了让车身变透明
+                    carContainer.classList.add("reveal-failure");
+
+                    // 2. [新增] 准确找到出问题的那个零件 DOM，并单独给它加高亮
+                    let selector = "";
+                    if (err.part === "motor") selector = ".part-motor";
+                    if (err.part === "gear") selector = ".part-gears"; // 注意 HTML 中类名是复数 part-gears
+
+                    const targetPart = carContainer.querySelector(selector);
+                    if (targetPart) {
+                        targetPart.classList.add("failure-highlight");
+                    }
+                }
+            });
         } else {
-            testMessage.textContent = "🏆 " + result.msg;
             testMessage.style.color = "#27ae60";
         }
 
+        testMessage.textContent = displayMsg; // 这里的 \n 会被 CSS 的 white-space: pre-wrap 识别
+
         resetBtn.style.display = "block";
-    }, duration);
+    }, finalSpeed);
 }
 
-function applyCrashEffect(partName, animClass) {
-    if (!partName) return;
+// 辅助函数：应用崩溃特效
+function applyCrashEffect(partName, animName) {
+    const partElement = document.querySelector(`.test-car .${partName}`);
+    if (!partElement) return;
 
-    if (partName === "body" && animClass === "shatter-anim") {
-        const bodyPart = carContainer.querySelector(
-            '.drop-zone[data-target="body"]',
-        );
-        if (bodyPart) {
-            bodyPart.style.opacity = "0";
-            const shardLeft = bodyPart.cloneNode(true);
-            const shardRight = bodyPart.cloneNode(true);
+    // 1. 创建特效层
+    const effectLayer = document.createElement("div");
+    effectLayer.className = `crash-effect ${animName}`;
 
-            shardLeft.className =
-                "drop-zone part-body installed body-shard-left glass";
-            shardRight.className =
-                "drop-zone part-body installed body-shard-right glass";
-            shardLeft.style.opacity = "1";
-            shardRight.style.opacity = "1";
+    // 获取部件的位置和大小，让特效层覆盖它
+    const rect = partElement.getBoundingClientRect();
+    const carRect = carContainer.getBoundingClientRect();
 
-            carContainer.appendChild(shardLeft);
-            carContainer.appendChild(shardRight);
+    effectLayer.style.top = rect.top - carRect.top + "px";
+    effectLayer.style.left = rect.left - carRect.left + "px";
+    effectLayer.style.width = rect.width + "px";
+    effectLayer.style.height = rect.height + "px";
 
-            const shardsEffect = carContainer.querySelector(".effect-shards");
-            if (shardsEffect) {
-                shardsEffect.style.opacity = 1;
-                shardsEffect.style.animation = "explode 0.5s forwards";
-            }
+    // 2. 根据不同特效添加额外元素
+    // 【核心修改】增加 partName === "tire" 的判断
+    // 只有轮胎碎裂时才显示这个“⚡”图标，车身碎裂时不显示
+    if (animName === "shatter-anim" && partName === "tire") {
+        // 添加碎玻璃图标
+        effectLayer.innerHTML = '<div class="glass-shard">⚡</div>';
+    } else if (animName === "burnout-anim") {
+        // 添加烟雾
+        for (let i = 0; i < 3; i++) {
+            const smoke = document.createElement("div");
+            smoke.className = "smoke-particle";
+            smoke.style.left = Math.random() * 20 - 10 + "px";
+            smoke.style.animationDelay = i * 0.2 + "s";
+            effectLayer.appendChild(smoke);
         }
-        return;
     }
 
-    const parts = carContainer.querySelectorAll(
-        `.drop-zone[data-target="${partName}"]`,
-    );
-    parts.forEach((p) => {
-        p.classList.add(animClass);
-        if (animClass === "slip-anim") carContainer.classList.add("slip-anim");
-        if (animClass === "burnout-anim")
-            carContainer.classList.add("burnout-anim");
-    });
+    carContainer.appendChild(effectLayer);
 }
 
 function cleanUpEffects() {
     const allParts = carContainer.querySelectorAll(".drop-zone");
     allParts.forEach((p) => {
-        p.classList.remove("shatter-anim", "burnout-anim", "slip-anim");
+        p.classList.remove("shatter-anim", "burnout-anim", "slip-anim", "failure-highlight");
         p.style.opacity = "";
     });
 
